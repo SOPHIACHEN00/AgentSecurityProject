@@ -4,8 +4,8 @@ The 1,444 decisions cover 169 queries (871 Yes and 573 No). Each seed (42, 43, 4
 
 | Model | Weights | Accuracy (%) | Macro-F1 | FP | FN | FPR (%) | FNR (%) |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Qwen3-4B | Raw | 86.84 | 0.8616 | 106 | 84 | 18.50 | 9.64 |
-| Qwen3-4B | SFT | 95.66 ± 0.11 | 0.9546 ± 0.0011 | 34.00 ± 2.65 | 28.67 ± 3.06 | 5.93 ± 0.46 | 3.29 ± 0.35 |
+| Qwen3-4B-Instruct-2507 | Raw | 86.84 | 0.8616 | 106 | 84 | 18.50 | 9.64 |
+| Qwen3-4B-Instruct-2507 | SFT | 95.66 ± 0.11 | 0.9546 ± 0.0011 | 34.00 ± 2.65 | 28.67 ± 3.06 | 5.93 ± 0.46 | 3.29 ± 0.35 |
 | Qwen3-8B | Raw | 84.97 | 0.8479 | 38 | 179 | 6.63 | 20.55 |
 | Qwen3-8B | SFT | 94.76 ± 0.26 | 0.9451 ± 0.0027 | 41.67 ± 1.15 | 34.00 ± 4.58 | 7.27 ± 0.20 | 3.90 ± 0.53 |
 | Qwen3.5-0.8B | Raw | 45.29 | 0.3837 | 4 | 786 | 0.70 | 90.24 |
@@ -17,14 +17,14 @@ Raw denotes the original weights evaluated once on the same 1,444 decisions. For
 
 ## Training and validation loss
 
-![Qwen3-4B training and validation loss versus optimizer step](cv-4b-loss.png)
+![Qwen3-4B-Instruct-2507 training and validation loss versus optimizer step](cv-qwen3-4b-loss.png)
 
-![Qwen3-8B training and validation loss versus optimizer step](cv-8b-loss.png)
+![Qwen3-8B training and validation loss versus optimizer step](cv-qwen3-8b-loss.png)
 
 ![Qwen3.5-0.8B training and validation loss versus optimizer step](cv-qwen35-0.8b-loss.png)
 
 ![Qwen3.5-2B training and validation loss versus optimizer step](cv-qwen35-2b-loss.png)
 
-For Qwen3-4B and Qwen3-8B, loss measurements come from a second run of the same 30 fits. For Qwen3.5-0.8B and Qwen3.5-2B, the 30 fits used for the prediction table also produced the loss measurements. At each marked step, both losses were measured at the same weights with dropout disabled, across all examples in the training folds and the held-out validation fold. Each loss is the mean negative log-likelihood over the answer and end-of-turn tokens. Each held-out fold supplied the monitoring losses and the final evaluation. The table uses the prespecified two-epoch checkpoint in every fold.
+For Qwen3-4B-Instruct-2507 and Qwen3-8B, loss measurements come from a second run of the same 30 fits. For Qwen3.5-0.8B and Qwen3.5-2B, the 30 fits used for the prediction table also produced the loss measurements. At each marked step, both losses were measured at the same weights with dropout disabled, across all examples in the training folds and the held-out validation fold. Each loss is the mean negative log-likelihood over the answer and end-of-turn tokens. Each held-out fold supplied the monitoring losses and the final evaluation. The table uses the prespecified two-epoch checkpoint in every fold.
 
 Each point is the arithmetic mean of 15 fold measurements for one model. Shading shows the 25th to 75th percentiles across those fits. Panels within each model family share the same axis limits. Measurements start before training and repeat every 32 optimizer steps. The plots end at the last shared step (288). Depending on fold size, training ended at step 288, 290 or 292.

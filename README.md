@@ -22,7 +22,7 @@ The first model load downloads a pinned revision from Hugging Face. For offline 
 
 ## Train and evaluate one fold
 
-The commands use seed 42 and fold 1 by default. Four folds supply training data and the fifth supplies held-out evaluation data. Output directories must be new. To run 8B, use `--model 8b` throughout and choose new output directories.
+The commands use seed 42 and fold 1 by default. Four folds supply training data and the fifth supplies held-out evaluation data. Output directories must be new. To run Qwen3-8B, use `--model 8b` throughout and choose new output directories.
 
 ```bash
 python src/sft/evaluate.py --model 4b --output-dir runs/4b-base
@@ -30,7 +30,7 @@ python src/sft/train.py --model 4b --output-dir runs/4b-train
 python src/sft/evaluate.py --model 4b --adapter runs/4b-train/adapter --output-dir runs/4b-sft
 ```
 
-Training uses two epochs, BF16, an effective batch size of eight, and LoRA on the attention projections. The 4B model uses four examples per device step with two accumulation steps. The 8B model uses two examples with four accumulation steps. The learning rate peaks at 0.00005 after a 5% warmup and decays linearly. Only the answer and end-of-turn token contribute to the loss. Training logs loss at each optimizer update and saves the final adapter. Evaluation uses greedy decoding, with thinking disabled for Qwen3-8B.
+Training uses two epochs, BF16, an effective batch size of eight, and LoRA on the attention projections. Qwen3-4B-Instruct-2507 uses four examples per device step with two accumulation steps. Qwen3-8B uses two examples with four accumulation steps. The learning rate peaks at 0.00005 after a 5% warmup and decays linearly. Only the answer and end-of-turn token contribute to the loss. Training logs loss at each optimizer update and saves the final adapter. Evaluation uses greedy decoding, with thinking disabled for Qwen3-8B.
 
 ## Repeated five-fold cross-validation
 
