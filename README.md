@@ -48,3 +48,14 @@ python src/sft/cross_validate.py --output-dir runs/cv
 Each of the seeds 42, 43 and 44 defines five folds grouped by query ID and balanced by data source and group size. Both model sizes use the same folds. Each run starts from pinned base weights. The held-out fold is used after the fixed training schedule. For each repeat, every example contributes one held-out prediction per model and condition.
 
 Each evaluation writes `predictions.jsonl` and `metrics.json`. The cross-validation runner pools predictions within each repeat and writes the mean and sample standard deviation across repeats to `summary.json`. Reported metrics include accuracy, Macro-F1, FP (gold No, predicted Yes), FN (gold Yes, predicted No), FPR and FNR. Other outputs count as incorrect and are also reported separately. A smoke summary covers only its single held-out fold.
+
+### Qwen3.5-0.8B and Qwen3.5-2B
+
+These checkpoints use a newer Transformers runtime. The RTX 5090 experiment used PyTorch 2.11.0+cu128, Transformers 5.4.0, PEFT 0.19.1, Accelerate 1.12.0, huggingface-hub 1.33.0, flash-linear-attention and fla-core 0.4.2. Download the revisions listed in `src/sft/qwen35_cv.py` to `models/Qwen3.5-0.8B` and `models/Qwen3.5-2B`, and write the matching commit hash in each snapshot's `REVISION` file.
+
+```bash
+python src/sft/qwen35_cv.py --run runs/qwen35-3x5
+python src/sft/report_qwen35_cv.py --run runs/qwen35-3x5
+```
+
+The runner uses the same query partitions and evaluates each original checkpoint once on all rows. Each fold starts from the original weights, updates the language model's full-attention Q/K/V/O adapters for two epochs with batches of eight, and decodes held-out decisions greedily with thinking disabled. It saves each update's loss, learning rate and gradient norm in `steps.jsonl`. Reporting uses NumPy and Matplotlib, checks the predictions against the original examples, and writes per-repeat scores, a summary, and English training/validation figures.

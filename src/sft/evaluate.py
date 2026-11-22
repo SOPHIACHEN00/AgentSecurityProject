@@ -1,12 +1,14 @@
 """Evaluate the base model or a saved adapter on held-out permission decisions."""
 from collections import Counter
 import json
+import inspect
 from pathlib import Path
 
 from peft import PeftModel
 from sklearn.metrics import accuracy_score, f1_score
 import torch
 from transformers import GenerationConfig
+from transformers.generation import GenerationMixin
 
 from common import ROOT, experiment_parser, load_model, new_run_dir, partition, permission_prompt, write_json
 
@@ -16,6 +18,9 @@ def predict(model, tokenizer, rows):
     """Decode with the same greedy settings during validation and standalone evaluation."""
     generation = GenerationConfig(do_sample=False, max_new_tokens=8, use_cache=True,
                                   eos_token_id=tokenizer.eos_token_id, pad_token_id=tokenizer.pad_token_id)
+    # Transformers 4 exposes this switch. Transformers 5 removed the argument.
+    options = {"use_model_defaults": False} if "use_model_defaults" in inspect.signature(
+        GenerationMixin.generate).parameters else {}
     results = []
     previous_padding = tokenizer.padding_side
     tokenizer.padding_side = "left"
@@ -25,7 +30,7 @@ def predict(model, tokenizer, rows):
             inputs = permission_prompt(tokenizer, [row["prompt"] for row in batch],
                                        padding=True, return_tensors="pt", return_dict=True).to(model.device)
             output = model.generate(**inputs, generation_config=generation,
-                                    use_model_defaults=False, do_sample=False)
+                                    **options, do_sample=False)
             texts = tokenizer.batch_decode(output[:, inputs.input_ids.shape[1]:], skip_special_tokens=True)
             for row, raw in zip(batch, texts, strict=True):
                 answer = raw.strip()
