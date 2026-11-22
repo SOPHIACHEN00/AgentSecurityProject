@@ -11,6 +11,12 @@ The 1,444 decisions cover 169 queries (871 Yes and 573 No). Each seed (42, 43, 4
 
 Raw denotes the original weights evaluated once on the same 1,444 decisions. For SFT, each repeat pools one out-of-fold prediction per decision. Entries show the mean ± sample standard deviation across three repeats. FP counts incorrect access grants and FN counts incorrect denials. All evaluated outputs were valid Yes/No decisions.
 
-![Training loss versus optimizer step for Qwen3-4B and Qwen3-8B](cv-training-loss.png)
+## Training and validation loss
 
-Each line averages 15 runs per model after smoothing each run with a trailing 10-step mean (shorter windows for the first nine steps). Shading spans the 25th to 75th percentiles across runs. The curves end at step 288, the last step shared by all runs. Individual runs ended at steps 288–292. The runs logged training loss at each update and evaluated held-out decisions after training. No per-step validation loss was recorded.
+![Qwen3-4B training and validation loss versus optimizer step](cv-4b-loss.png)
+
+![Qwen3-8B training and validation loss versus optimizer step](cv-8b-loss.png)
+
+The loss measurements come from a second run of the same 30 fits, using the original query assignments, seeds, effective batch size of eight and two-epoch schedule. At each marked step, both losses were measured at the same weights with dropout disabled, across all examples in the training folds and the held-out validation fold. Each loss is the mean negative log-likelihood over the answer and end-of-turn tokens. The validation fold was used for monitoring only. All runs used their scheduled final update.
+
+Each point is the arithmetic mean of 15 fold measurements for one model. Shading shows the 25th to 75th percentiles across those fits. Both panels use the same axes. Measurements start before training and repeat every 32 optimizer steps. The plots end at the last shared step (288). Depending on fold size, training ended at step 288, 290 or 292.
