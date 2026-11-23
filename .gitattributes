@@ -1,3 +1,6 @@
 *.py text eol=lf
 *.md text eol=lf
 *.jsonl -text
+*.sh text eol=lf
+*.csv text eol=lf
+data/splits/permission-cv-plan.json -text

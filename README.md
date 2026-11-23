@@ -59,3 +59,20 @@ python src/sft/report_qwen35_cv.py --run runs/qwen35-3x5
 ```
 
 The runner uses the same query partitions and evaluates each original checkpoint once on all rows. Each fold starts from the original weights, updates the language model's full-attention Q/K/V/O adapters for two epochs with batches of eight, and decodes held-out decisions greedily with thinking disabled. It saves each update's loss, learning rate and gradient norm in `steps.jsonl`. Reporting uses NumPy and Matplotlib, checks the predictions against the original examples, and writes per-repeat scores, a summary, and English training/validation figures.
+
+## Local case retrieval for permission decisions
+
+How much does a larger case library help when a model always sees 32 examples? On the same 15 held-out folds, we gave each frozen checkpoint its 32 closest labeled examples from a library containing 25%, 50% or 100% of the training queries. Each fold uses nested libraries sampled by data source. TF-IDF ranks the original query, tool and data text, and all four models use the same ranked examples. [Fold assignments](data/splits/permission-cv-plan.json) · [Experiment code](src/local_rules)
+
+Expanding the library from 25% to 100% changed mean accuracy by +0.72 percentage points for Qwen3-4B-Instruct-2507, −0.48 for Qwen3-8B, +1.96 for Qwen3.5-2B and +0.88 for Qwen3.5-0.8B. All four scored higher with the full library than with Raw, and SFT had the highest mean accuracy for each checkpoint. For Qwen3.5-0.8B, moving from Raw to the full library increased false permits from 4 to 83.33 per 1,444 decisions and reduced false denials from 786 to 381.67. [Four comparison tables and conclusions](results/local-rules-comparison.md)
+
+The CSV files retain the unrounded scores. Raw is one measured evaluation on 1,444 decisions. For SFT and Local Rules, each seed covers the full dataset once across five held-out folds. The summary reports the mean and sample standard deviation over seeds 42, 43 and 44. [Summary CSV](results/local-rules-summary.csv) · [Local Rules per seed](results/local-rules-per-seed.csv) · [Raw and SFT reference scores](results/cross-validation-reference.csv)
+
+To reproduce the RTX 5090 run, use the two Python environments described above. Put each of the four pinned snapshots in `models/<checkpoint-name>/`, with its commit hash in `REVISION`. The runner prepares the shared retrievals, runs the four frozen checkpoints, audits the 51,984 predictions and writes the comparison tables. [Pinned revisions](src/local_rules/prepare.py)
+
+```bash
+QWEN3_PYTHON=.venv/bin/python QWEN35_PYTHON=.venv-q35/bin/python \
+  bash src/local_rules/run.sh runs/local-rules-32shot-cv
+```
+
+The selected query IDs, ranked example line numbers, similarity scores, per-case predictions and metric CSVs are written under the specified run directory. The report uses the published Raw and SFT reference scores. If you have the original prediction archives, pass both `--qwen3-history` and `--qwen35-history` to `src/local_rules/report.py` to rescore those predictions as well.
